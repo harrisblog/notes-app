@@ -9,14 +9,16 @@ const useNotes = () => {
     });
   };
 
-  const addNote = (id: number) => {
+  const addNote = (id: number, setActiveNote: (note: Note) => void) => {
     const notes = getAllNotes();
-    notes.push({
-      id: id,
+    const newNote = {
+      id,
       title: "",
       body: "",
       updated: new Date().toISOString(),
-    });
+    };
+    notes.push(newNote);
+    setActiveNote(newNote);
 
     localStorage.setItem("notesapp-notes", JSON.stringify(notes));
   };

@@ -8,6 +8,8 @@
 
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html,
@@ -80,7 +82,7 @@ body {
 }
 
 .notes__list-item--selected:hover {
-  background: #00af8c66;
+  background: #00af8c4d;
 }
 
 .notes__small-title,
@@ -110,12 +112,13 @@ body {
 .notes__header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: end;
   margin-bottom: 20px;
 }
 
 .notes__saved {
   color: rgb(82, 180, 52);
+  margin-left: 20px;
 }
 
 .notes__header-btns {
@@ -128,7 +131,7 @@ body {
   border-radius: 12px;
   color: #ffffff;
   cursor: pointer;
-  font-size: 1em;
+  font-size: 1rem;
   font-weight: bold;
   padding: 0.75em;
   transition: .3s;
@@ -190,8 +193,10 @@ article {
 
 .notes__empty-area {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 20px;
   font-size: 2em;
   border-radius: 16px;
   background-color: #eee;

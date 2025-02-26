@@ -6,34 +6,28 @@ import { Note } from "./types";
 
 export interface Props {
   notes: Note[];
-  activeNoteID: number | null;
-  setActiveNoteID: (id: number | null) => void;
-  refreshNotes: () => void;
+  activeNote: Note | null;
+  setActiveNote: (note: Note) => void;
+  refreshNotes: (activeNote?: Note) => void;
 }
 
 const App = () => {
   const { getAllNotes } = useNotes();
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [activeNoteID, setActiveNoteID] = useState<number | null>(
-    notes[0]?.id || null
-  );
+  const [notes, setNotes] = useState<Note[]>(getAllNotes());
+  const [activeNote, setActiveNote] = useState<Note | null>(notes[0] || null);
 
-  const refreshNotes = useCallback(() => {
+  const refreshNotes = useCallback((note?: Note) => {
     const notes = getAllNotes();
     setNotes(notes);
-    setActiveNoteID(notes[0]?.id || null);
+    setActiveNote(note || notes[0] || null);
   }, []);
 
   const props: Props = {
     notes,
-    activeNoteID,
-    setActiveNoteID,
+    activeNote,
+    setActiveNote,
     refreshNotes,
   };
-
-  useEffect(() => {
-    refreshNotes();
-  }, []);
 
   return (
     <div className="notes">

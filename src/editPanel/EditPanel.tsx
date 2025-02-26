@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Note } from "../types";
 import useNotes from "../hooks/useNotes";
 import { Props } from "../App";
@@ -7,18 +7,15 @@ import { importCSV, importXML } from "../utils/import";
 
 const EditPanel = ({
   notes,
-  activeNoteID,
-  setActiveNoteID,
+  activeNote,
+  setActiveNote,
   refreshNotes,
 }: Props) => {
   const { getAllNotes, updateNote, deleteNote } = useNotes();
-  const activeNote = useMemo(
-    () => notes.find((note) => note.id === activeNoteID),
-    [activeNoteID, notes]
-  );
-  const [title, setTitle] = useState<string>("");
-  const [body, setBody] = useState<string>("");
+  const [title, setTitle] = useState<string>(activeNote?.title || "");
+  const [body, setBody] = useState<string>(activeNote?.body || "");
   const [showSaved, setShowSaved] = useState<boolean>(false);
+  const [lastNote, setLastNote] = useState<Note | null>(null);
 
   const onImportNote = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -60,7 +57,8 @@ const EditPanel = ({
 
   const onExportNote = () => {
     const format = prompt("请选择下载格式 (输入 csv 或 xml):");
-    if (!format || !["csv", "xml"].includes(format.toLowerCase())) {
+    if (format === null) return;
+    if (!["csv", "xml"].includes(format.toLowerCase())) {
       alert("请输入有效的格式: csv 或 xml");
       return;
     }
@@ -76,11 +74,11 @@ const EditPanel = ({
   };
 
   const onDeleteNote = () => {
-    if (!activeNoteID) return;
+    if (!activeNote) return;
     const doDelete = confirm("确认要删除该笔记吗?");
     if (doDelete) {
-      deleteNote(activeNoteID);
-      setActiveNoteID(notes[0]?.id || null);
+      deleteNote(activeNote.id);
+      setActiveNote(notes[0] || null);
       refreshNotes();
     }
   };
@@ -91,21 +89,26 @@ const EditPanel = ({
   }, [activeNote]);
 
   useEffect(() => {
-    if (!activeNoteID) return;
-
+    if (!activeNote) return;
+    // Don't update when open a new note
+    if (lastNote?.id !== activeNote.id) {
+      setLastNote(activeNote);
+      return;
+    }
     const timer = setTimeout(() => {
       updateNote({
-        id: activeNoteID,
+        id: activeNote.id,
         title,
         body,
         updated: new Date().toISOString(),
       });
-      // setShowSaved(true);
-      // setTimeout(() => setShowSaved(false), 2000);
+      setShowSaved(true);
+      setTimeout(() => setShowSaved(false), 2000);
+      refreshNotes(activeNote);
     }, 800);
 
     return () => clearTimeout(timer);
-  }, [title, body, activeNoteID, updateNote]);
+  }, [title, body]);
 
   const NoteHeader = () => (
     <div className="notes__header">
@@ -144,7 +147,7 @@ const EditPanel = ({
 
   return (
     <div className="notes__preview">
-      {activeNoteID ? (
+      {notes.length > 0 ? (
         <>
           <NoteHeader />
 
@@ -152,7 +155,7 @@ const EditPanel = ({
             <input
               className="notes__title"
               type="text"
-              placeholder="新建笔记"
+              placeholder="创建标题"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
@@ -167,7 +170,18 @@ const EditPanel = ({
         </>
       ) : (
         <div className="notes__empty-area">
-          <p>空空如也，请添加新的笔记</p>
+          <p>请添加新的笔记</p>
+          <p>或</p>
+          <label htmlFor="file-import" className="notes__import notes__button">
+            批量导入 ⬆️
+          </label>
+          <input
+            id="file-import"
+            type="file"
+            accept=".csv,.xml"
+            style={{ display: "none" }}
+            onChange={onImportNote}
+          />
         </div>
       )}
     </div>
